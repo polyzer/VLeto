@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //		arjs-hit-testing
 //////////////////////////////////////////////////////////////////////////////
+var PortalDoor = null;
 
 AFRAME.registerComponent('arjs-portal-door', {
 	schema: {
@@ -23,10 +24,15 @@ AFRAME.registerComponent('arjs-portal-door', {
 		var doorHeight = this.data.doorHeight
 		var imageURL = this.data.url
 
-		var portalDoor = new THREEx.Portal360(imageURL, doorWidth, doorHeight)
-		this._portalDoor = portalDoor
+		this._portalDoor = new THREEx.Portal360(imageURL, doorWidth, doorHeight);
+		PortalDoor = this._portalDoor;
 
-		this.el.object3D.add(portalDoor.object3d)
+		if(window.DeviceOrientationEvent)
+		{
+			window.addEventListener("deviceorientation", this._portalDoor);
+		}
+
+		this.el.object3D.add(this._portalDoor.object3d)
 	},
 	tick: function(){
 		this._portalDoor.update()

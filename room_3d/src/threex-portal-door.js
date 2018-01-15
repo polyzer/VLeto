@@ -2,6 +2,12 @@ var THREEx = THREEx || {}
 
 THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight){
 	
+	this.update1 = this.update1.bind(this);
+	this.update2 = this.update2.bind(this);
+	this.update3 = this.update3.bind(this);
+
+	this.update = this.update1;
+
 	var doorCenter = new THREE.Group
 	this.doorCenter = doorCenter;
 	doorCenter.position.y = doorHeight/2
@@ -320,9 +326,10 @@ THREEx.Portal360.prototype._buildSpriteMesh = function(width, height){
 //		update function
 //////////////////////////////////////////////////////////////////////////////
 
-THREEx.Portal360.prototype.update = function () {
+
+THREEx.Portal360.prototype.update1 = function () {
 	// determine if the user is isOutsidePortal
-	var localPosition = new THREE.Vector3
+	var localPosition = new THREE.Vector3();
 	this.object3d.worldToLocal(localPosition)
 	var isOutsidePortal = localPosition.z >= 0 ? true : false
 
@@ -335,3 +342,68 @@ THREEx.Portal360.prototype.update = function () {
 		this.insideMesh.visible = true
 	}
 }
+
+THREEx.Portal360.prototype.changeUpdateFunctionTo2 = function ()
+{
+	this.update = this.update2;
+};
+
+THREEx.Portal360.prototype.update2 = function() {
+
+	if ( isUserInteracting === false ) {
+
+		lon += 0.1;
+
+	}
+
+	lat = Math.max( - 85, Math.min( 85, lat ) );
+	phi = THREE.Math.degToRad( 90 - lat );
+	theta = THREE.Math.degToRad( lon );
+
+	target.x = 500 * Math.sin( phi ) * Math.cos( theta );
+	target.y = 500 * Math.cos( phi );
+	target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+
+	camera.lookAt( target );
+
+	renderer.render( scene, camera );
+
+};
+
+THREEx.Portal360.prototype.changeUpdateFunctionTo3 = function ()
+{
+	this.update = this.update3;
+};
+
+THREEx.Portal360.prototype.update3 = function() {
+
+	if ( isUserInteracting === false ) {
+
+	lon += 0.1;
+
+	}
+
+	lat = Math.max( - 85, Math.min( 85, lat ) );
+	phi = THREE.Math.degToRad( 90 - lat );
+	theta = THREE.Math.degToRad( lon );
+
+	target.x = 500 * Math.sin( phi ) * Math.cos( theta );
+	target.y = 500 * Math.cos( phi );
+	target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+
+	camera.lookAt( target );
+
+	renderer.render( scene, camera );
+
+};
+
+
+THREEx.Portal360.prototype.onOrientationEvent = function (event)
+{
+
+};
+
+THREEx.Portal360.prototype.onAccelerationEvent = function (event)
+{
+
+};
