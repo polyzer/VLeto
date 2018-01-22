@@ -327,7 +327,7 @@ THREEx.Portal360.prototype._buildSpriteMesh = function(width, height){
 //////////////////////////////////////////////////////////////////////////////
 
 
-THREEx.Portal360.prototype.update1 = function () {
+THREEx.Portal360.prototype.update1 = function (now, delta) {
 	// determine if the user is isOutsidePortal
 	var localPosition = new THREE.Vector3();
 	this.object3d.worldToLocal(localPosition)
@@ -345,29 +345,34 @@ THREEx.Portal360.prototype.update1 = function () {
 
 THREEx.Portal360.prototype.changeUpdateFunctionTo2 = function ()
 {
+	
+	this.SceneCopy = AAnchor.object3D.clone();
+	GlobalScene = GlobalScene.object3D;
+	GlobalScene.add(this.SceneCopy);
+
+	this.AntiVec = this.SceneCopy.position.clone();
+	this.AntiVec.normalize();
+	this.AntiVec.multiplyScalar(-0.05);
+
 	this.update = this.update2;
 };
 
-THREEx.Portal360.prototype.update2 = function() {
+THREEx.Portal360.prototype.update2 = function(now, delta) 
+{
+	if(this.SceneCopy.position.length() < 0.3)
+	{
+		this.SceneCopy.position.set(0,0,0);
+		if( isOutsidePortal ){
+			this.outsideMesh.visible = true
+			this.insideMesh.visible = false
+		}else{
+			this.outsideMesh.visible = false
+			this.insideMesh.visible = true
+		}
 
-	if ( isUserInteracting === false ) {
-
-		lon += 0.1;
-
+	} else {
+		this.SceneCopy.position.sub(this.AntiVec);
 	}
-
-	lat = Math.max( - 85, Math.min( 85, lat ) );
-	phi = THREE.Math.degToRad( 90 - lat );
-	theta = THREE.Math.degToRad( lon );
-
-	target.x = 500 * Math.sin( phi ) * Math.cos( theta );
-	target.y = 500 * Math.cos( phi );
-	target.z = 500 * Math.sin( phi ) * Math.sin( theta );
-
-	camera.lookAt( target );
-
-	renderer.render( scene, camera );
-
 };
 
 THREEx.Portal360.prototype.changeUpdateFunctionTo3 = function ()

@@ -34,12 +34,10 @@ AFRAME.registerComponent('arjs-portal-door', {
 
 		this.el.object3D.add(this._portalDoor.object3d)
 	},
-	tick: function(){
-		this._portalDoor.update()
-
+	tick: function(now, delta){
+		this._portalDoor.update(now, delta);
 
 		if(CameraInfoDiv)
-			//if(APortalDoor)
 			if(AAnchor)
 				CameraInfoDiv.innerText = AAnchor.object3D.position.x + " " + AAnchor.object3D.position.y + " " + AAnchor.object3D.position.z;
 
