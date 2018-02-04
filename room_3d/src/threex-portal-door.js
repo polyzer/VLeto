@@ -335,20 +335,24 @@ THREEx.Portal360.prototype.update1 = function (now, delta) {
 
 	// handle mesh visibility based on isOutsidePortal
 	if( isOutsidePortal ){
-		this.outsideMesh.visible = true
-		this.insideMesh.visible = false
+		this.outsideMesh.visible = true;
+		this.insideMesh.visible = false;
 	}else{
-		this.outsideMesh.visible = false
-		this.insideMesh.visible = true
+		this.outsideMesh.visible = false;
+		this.insideMesh.visible = true;
 	}
 }
 
 THREEx.Portal360.prototype.changeUpdateFunctionTo2 = function ()
 {
-	
-	this.SceneCopy = AAnchor.object3D.clone();
-	GlobalScene = GlobalScene.object3D;
-	GlobalScene.add(this.SceneCopy);
+	this.SceneCopy = AAnchor.object3D;
+	AAnchor.object3D = new THREE.Scene();
+	// this.SceneCopy.position.copy(AAnchor.object3D.position);
+	// this.SceneCopy.rotation.copy(AAnchor.object3D.rotation);
+	// AAnchor.object3D.remove(PortalDoor.object3d);
+	// this.SceneCopy.add(PortalDoor.object3d);
+	// GlobalScene = GlobalScene.object3D;
+	// GlobalScene.add(this.SceneCopy);
 
 	this.AntiVec = this.SceneCopy.position.clone();
 	this.AntiVec.normalize();
@@ -362,16 +366,8 @@ THREEx.Portal360.prototype.update2 = function(now, delta)
 	if(this.SceneCopy.position.length() < 0.3)
 	{
 		this.SceneCopy.position.set(0,0,0);
-		if( isOutsidePortal ){
-			this.outsideMesh.visible = true
-			this.insideMesh.visible = false
-		}else{
-			this.outsideMesh.visible = false
-			this.insideMesh.visible = true
-		}
-
 	} else {
-		this.SceneCopy.position.sub(this.AntiVec);
+		this.SceneCopy.position.add(this.AntiVec);
 	}
 };
 
@@ -384,7 +380,7 @@ THREEx.Portal360.prototype.update3 = function() {
 
 	if ( isUserInteracting === false ) {
 
-	lon += 0.1;
+		lon += 0.1;
 
 	}
 
