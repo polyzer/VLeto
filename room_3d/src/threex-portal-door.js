@@ -1,17 +1,26 @@
 var THREEx = THREEx || {}
 
-THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight){
+THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight, radius){
 	
 	this.update1 = this.update1.bind(this);
 	this.update2 = this.update2.bind(this);
 	this.update3 = this.update3.bind(this);
+	this.update4 = this.update4.bind(this);
+	this.update5 = this.update5.bind(this);
+			/// 
+	this.deviceMotionInterval = 0;
+	this.dt = 0.015;
+	this.phi = Math.PI/2;
+	this.theta = Math.PI/2;
+
+	this.target = new THREE.Vector3();	
+	this.radius = radius;
 
 	this.update = this.update1;
 
-	var doorCenter = new THREE.Group
-	this.doorCenter = doorCenter;
-	doorCenter.position.y = doorHeight/2
-	this.object3d = doorCenter
+	var doorCenter = new THREE.Group;
+	doorCenter.position.y = doorHeight/2;
+	this.object3d = doorCenter;
 
 	//////////////////////////////////////////////////////////////////////////////
 	//		build texture360
@@ -44,25 +53,29 @@ THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight){
 	//////////////////////////////////////////////////////////////////////////////
 
 	// create insideMesh which is visible IIF inside the portal
-	var insideMesh = this._buildInsideMesh(texture360, doorWidth, doorHeight)
+	var insideMesh = this._buildInsideMesh(texture360, doorWidth, doorHeight, radius)
+	insideMesh.name = "inside"
 	doorCenter.add(insideMesh)
 	this.insideMesh = insideMesh
 
 	// create outsideMesh which is visible IIF outside the portal
-	var outsideMesh = this._buildOutsideMesh(texture360, doorWidth, doorHeight)
+	var outsideMesh = this._buildOutsideMesh(texture360, doorWidth, doorHeight, radius)
+	insideMesh.name = "outside"
 	doorCenter.add(outsideMesh)
 	this.outsideMesh = outsideMesh
 
 	// create frameMesh for the frame of the portal
 	var frameMesh = this._buildRectangularFrame(doorWidth/100, doorWidth, doorHeight)
-
+	frameMesh.name = "frame"
 	// // it adds glow Effect to portal.
 	// var spriteMesh = this._buildSpriteMesh(doorWidth, doorHeight);
 
 	doorCenter.add(frameMesh);
 //	doorCenter.add(glowMesh);
 
+	this.doorCenter = doorCenter;
 }
+			
 //////////////////////////////////////////////////////////////////////////////
 //		Code Separator
 //////////////////////////////////////////////////////////////////////////////
@@ -74,13 +87,7 @@ THREEx.Portal360.buildTransparentMaterial = function(){
 	var material = new THREE.MeshBasicMaterial({
 		colorWrite: false // only write to z-buf
 	})
-	// an alternative to reach the same visual - this one seems way slower tho. My guess is it is hitting a slow-path in gpu
-	// var material   = new THREE.MeshBasicMaterial();
-	// material.color.set('black')
-	// material.opacity   = 0;
-	// material.blending  = THREE.NoBlending;
-	
-	// cache the material
+
 	THREEx.Portal360.buildTransparentMaterial.material = material
 	
 	return material		
@@ -125,13 +132,8 @@ THREEx.Portal360.buildSquareCache = function(){
 /**
  * create insideMesh which is visible IIF inside the portal
  */
-THREEx.Portal360.prototype._buildInsideMesh	= function(texture360, doorWidth, doorHeight){
+THREEx.Portal360.prototype._buildInsideMesh	= function(texture360, doorWidth, doorHeight, radius){
 	var doorInsideCenter = new THREE.Group
-
-	// var squareCache = THREEx.Portal360.buildSquareCache()
-	// squareCache.scale.y = doorWidth
-	// squareCache.scale.y = doorHeight
-	// doorInsideCenter.add( squareCache )
 
 	var geometry = new THREE.PlaneGeometry(doorWidth, doorHeight)
 	var material = THREEx.Portal360.buildTransparentMaterial()
@@ -147,10 +149,10 @@ THREEx.Portal360.prototype._buildInsideMesh	= function(texture360, doorWidth, do
 	//////////////////////////////////////////////////////////////////////////////
 	// add 360 texture
 	// TODO put that in a this.data
-	var radius360Sphere = 10
+	var radius360Sphere = radius
 	// var radius360Sphere = 1
 
-	var geometry = new THREE.SphereGeometry( radius360Sphere, 16, 16).rotateZ(Math.PI)
+	var geometry = new THREE.SphereGeometry( radius360Sphere, 100, 100).rotateZ(Math.PI)
 	var material = new THREE.MeshBasicMaterial( {
 		map: texture360,
 		// opacity: 0.9,
@@ -158,7 +160,7 @@ THREEx.Portal360.prototype._buildInsideMesh	= function(texture360, doorWidth, do
 	});
 	// var material = new THREE.MeshNormalMaterial()
 	var sphere360Mesh = new THREE.Mesh( geometry, material );
-	sphere360Mesh.position.z = -0.1
+	sphere360Mesh.position.z = -radius360Sphere*0.01
 	sphere360Mesh.rotation.y = Math.PI
 	doorInsideCenter.add(sphere360Mesh)
 	
@@ -168,7 +170,7 @@ THREEx.Portal360.prototype._buildInsideMesh	= function(texture360, doorWidth, do
 /**
  * create outsideMesh which is visible IIF outside the portal
  */
-THREEx.Portal360.prototype._buildOutsideMesh = function(texture360, doorWidth, doorHeight){
+THREEx.Portal360.prototype._buildOutsideMesh = function(texture360, doorWidth, doorHeight, radius){
 	var doorOutsideCenter = new THREE.Group
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -183,11 +185,9 @@ THREEx.Portal360.prototype._buildOutsideMesh = function(texture360, doorWidth, d
 	//		add 360 sphere
 	//////////////////////////////////////////////////////////////////////////////
 	// add 360 texture
-	var radius360Sphere = 10
-	// var radius360Sphere = 1
+	var radius360Sphere = radius;
 
-	// build half sphere geometry
-	var geometry = new THREE.SphereGeometry( radius360Sphere, 16, 16, Math.PI, Math.PI, 0, Math.PI).rotateZ(Math.PI)
+	var geometry = new THREE.SphereGeometry( radius360Sphere, 100, 100, Math.PI, Math.PI, 0, Math.PI).rotateZ(Math.PI)
 	// fix UVs
 	geometry.faceVertexUvs[0].forEach(function(faceUvs){
 		faceUvs.forEach(function(uv){
@@ -200,10 +200,8 @@ THREEx.Portal360.prototype._buildOutsideMesh = function(texture360, doorWidth, d
 		// opacity: 0.9,
 		side: THREE.BackSide,
 	});
-	// var geometry = new THREE.SphereGeometry( radius360Sphere, 16, 16);
-	// var material = new THREE.MeshNormalMaterial()
 	var sphere360Mesh = new THREE.Mesh( geometry, material );
-	sphere360Mesh.position.z = -0.1
+	sphere360Mesh.position.z = -radius360Sphere*0.01
 	doorOutsideCenter.add(sphere360Mesh)
 	
 	return doorOutsideCenter
@@ -266,47 +264,6 @@ THREEx.Portal360.prototype._buildRectangularFrame = function(radius, width, heig
  */
 THREEx.Portal360.prototype._buildSpriteMesh = function(width, height){
 
-	// var VertexShader = 
-	// "uniform vec3 viewVector;"+
-	// "uniform float c;"+
-	// "uniform float p;"+
-	// "varying float intensity;"+
-	// "void main() "+
-	// "{"+
-	// "vec3 vNormal = normalize( normalMatrix * normal );"+
-	//  "	vec3 vNormel = normalize( normalMatrix * viewVector );"+
-	// "intensity = pow( c - dot(vNormal, vNormel), p );"+
-		
-	// "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );"+
-	// "}";
-
-	// var FragmentShader = 
-	// "uniform vec3 glowColor;"+
-	// "varying float intensity;"+
-	// "void main()"+ 
-	// "{"+
-	// "	vec3 glow = glowColor * intensity;"+
-	// "    gl_FragColor = vec4( glow, 1.0 );"+
-	// "}";
-
-
-	// var material = new THREE.ShaderMaterial( 
-	// {
-	//     uniforms: 
-	// 	{ 
-	// 		"c":   { type: "f", value: 0.3 },
-	// 		"p":   { type: "f", value: 3.5 },
-	// 		glowColor: { type: "c", value: new THREE.Color(0xffff00) }
-	// 		// ,
-	// 		// viewVector: { type: "v3", value: camera.position }
-	// 	},
-	// 	vertexShader: VertexShader,
-	// 	fragmentShader: FragmentShader,
-	// 	side: THREE.FrontSide,
-	// 	blending: THREE.AdditiveBlending,
-	// 	transparent: true
-	// }   );
-
 	var geometry = new THREE.PlaneGeometry(width, height);
 	var material = new THREE.MeshNormalMaterial();
 	var SpriteMesh = new THREE.Mesh(geometry, material);
@@ -323,52 +280,18 @@ THREEx.Portal360.prototype._buildSpriteMesh = function(width, height){
 };	
 
 //////////////////////////////////////////////////////////////////////////////
-//		update function
+//	                         	update function
 //////////////////////////////////////////////////////////////////////////////
-
-
-THREEx.Portal360.prototype.update1 = function (now, delta) {
-	// determine if the user is isOutsidePortal
-	var localPosition = new THREE.Vector3();
-	this.object3d.worldToLocal(localPosition)
-	var isOutsidePortal = localPosition.z >= 0 ? true : false
-
-	// handle mesh visibility based on isOutsidePortal
-	if( isOutsidePortal ){
-		this.outsideMesh.visible = true;
-		this.insideMesh.visible = false;
-	}else{
-		this.outsideMesh.visible = false;
-		this.insideMesh.visible = true;
-	}
-}
 
 THREEx.Portal360.prototype.changeUpdateFunctionTo2 = function ()
 {
-	this.SceneCopy = AAnchor.object3D;
+	this.PortalScene = AAnchor.object3D;
 	AAnchor.object3D = new THREE.Scene();
-	// this.SceneCopy.position.copy(AAnchor.object3D.position);
-	// this.SceneCopy.rotation.copy(AAnchor.object3D.rotation);
-	// AAnchor.object3D.remove(PortalDoor.object3d);
-	// this.SceneCopy.add(PortalDoor.object3d);
-	// GlobalScene = GlobalScene.object3D;
-	// GlobalScene.add(this.SceneCopy);
-
-	this.AntiVec = this.SceneCopy.position.clone();
-	this.AntiVec.normalize();
-	this.AntiVec.multiplyScalar(-0.05);
-
+	this.n = 100;
+	this.camera = cameraDom.object3D;
+	this.px = this.PortalScene.position.x / this.n;
+	this.py = this.PortalScene.position.y / this.n;
 	this.update = this.update2;
-};
-
-THREEx.Portal360.prototype.update2 = function(now, delta) 
-{
-	if(this.SceneCopy.position.length() < 0.3)
-	{
-		this.SceneCopy.position.set(0,0,0);
-	} else {
-		this.SceneCopy.position.add(this.AntiVec);
-	}
 };
 
 THREEx.Portal360.prototype.changeUpdateFunctionTo3 = function ()
@@ -376,27 +299,135 @@ THREEx.Portal360.prototype.changeUpdateFunctionTo3 = function ()
 	this.update = this.update3;
 };
 
-THREEx.Portal360.prototype.update3 = function() {
 
-	if ( isUserInteracting === false ) {
+THREEx.Portal360.prototype.changeUpdateFunctionTo4 = function ()
+{
+	this.AntiVec = this.PortalScene.position.clone();
+	this.AntiVec.normalize();
+	this.AntiVec.multiplyScalar(-0.3);	
+	this.update = this.update4;
+};
 
-		lon += 0.1;
+THREEx.Portal360.prototype.update1 = function (now, delta) {
+	// determine if the user is isOutsidePortal
+	var localPosition = new THREE.Vector3();
+	this.object3d.worldToLocal(localPosition)
+	var isOutsidePortal = localPosition.z >= 0 ? true : false
+}
 
-	}
+THREEx.Portal360.prototype.update2 = function() 
+{
+	this.rotate_speed = Math.PI/90;
+	if(this.PortalScene.rotation.x !== Math.PI/2)
+		if (Math.abs(this.PortalScene.rotation.x-Math.PI/2)>this.rotate_speed)
+			if (this.PortalScene.rotation.x -Math.PI/2> 0)
+				this.PortalScene.rotation.x-=this.rotate_speed/2;
+			else
+				this.PortalScene.rotation.x+=this.rotate_speed/2;
+		else this.PortalScene.rotation.x = Math.PI/2;
 
-	lat = Math.max( - 85, Math.min( 85, lat ) );
-	phi = THREE.Math.degToRad( 90 - lat );
-	theta = THREE.Math.degToRad( lon );
+	if(this.PortalScene.rotation.y !== 0)
+		if (Math.abs(this.PortalScene.rotation.y)>this.rotate_speed)
+			if (this.PortalScene.rotation.y > 0)
+				this.PortalScene.rotation.y-=this.rotate_speed/2;
+			else
+				this.PortalScene.rotation.y+=this.rotate_speed/2;
+		else this.PortalScene.rotation.y = 0;
 
-	target.x = 500 * Math.sin( phi ) * Math.cos( theta );
-	target.y = 500 * Math.cos( phi );
-	target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+	if(this.PortalScene.rotation.z !== 0)
+		if (Math.abs(this.PortalScene.rotation.z)>Math.PI/180)
+			if (this.PortalScene.rotation.z > 0)
+				this.PortalScene.rotation.z-=this.rotate_speed/2;
+			else
+				this.PortalScene.rotation.z+=this.rotate_speed/2;	
+		else this.PortalScene.rotation.z = 0;
+	if (this.PortalScene.rotation.x === Math.PI/2 && this.PortalScene.rotation.y === 0 && this.PortalScene.rotation.z === 0)
+		this.changeUpdateFunctionTo3();
+};
 
-	camera.lookAt( target );
+THREEx.Portal360.prototype.update3 = function() 
+{	
+	this.move_speed = 0.08;
+	if (this.PortalScene.position.x !== 0)
+		if (Math.abs(this.PortalScene.position.x)>this.move_speed)
+			if (this.PortalScene.position.x> 0)
+				this.PortalScene.position.x-=this.move_speed/2;
+			else
+				this.PortalScene.position.x+=this.move_speed/2;
+		else this.PortalScene.position.x = 0;
 
-	renderer.render( scene, camera );
+	if (this.PortalScene.position.y !== 0)
+		if (Math.abs(this.PortalScene.position.y)>this.move_speed)
+			if (this.PortalScene.position.y > 0)
+				this.PortalScene.position.y-=this.move_speed/2;
+			else
+				this.PortalScene.position.y+=this.move_speed/2;
+		else this.PortalScene.position.y = 0;
+	if (this.PortalScene.position.x === 0 && this.PortalScene.position.y === 0)
+		this.changeUpdateFunctionTo4();
+};
+
+THREEx.Portal360.prototype.update4 = function() 
+{
+	if (this.PortalScene.position.z < 4)
+		this.PortalScene.position.add(this.AntiVec);	
+		else
+		{	
+	        //var selectedObject = this.PortalScene.getObjectByName("frame");
+	        //this.PortalScene.remove( selectedObject );
+/*
+	        selectedObject = this.PortalScene.getObjectByName("inside");
+	        this.PortalScene.remove( selectedObject );*/
+			this.update = this.update5;
+		}
+};
+
+
+THREEx.Portal360.prototype.update5 = function() 
+{
+	if(OrientationParameters.alpha !== null && OrientationParameters.beta !== null)
+		{
+			this.phi+=OrientationParameters.alpha*this.dt*OrientationParameters.deviceMotionInterval*0.1;
+			this.theta+=OrientationParameters.beta*this.dt*OrientationParameters.deviceMotionInterval*0.1;
+			
+			OrientationParameters.phi = this.phi;
+			OrientationParameters.theta = this.theta;
+		}
+		this.target.x = 500 * Math.sin( this.phi  ) * Math.cos( this.theta );
+		this.target.y = 500 * Math.cos( this.phi  );
+		this.target.z = 500 * Math.sin( this.phi  ) * Math.sin( this.theta  );
+
+
+		/*this.target.x = 0;
+		this.target.y = 50;
+		this.target.z = 0;		*/
+
+		this.camera.lookAt( this.target );
 
 };
+
+/*
+THREEx.Portal360.prototype.update5 = function() 
+{
+	 if(OrientationParameters.alpha && OrientationParameters.beta)
+	 {
+	 	this.phi=OrientationParameters.alpha*this.dt*OrientationParameters.deviceMotionInterval*0.1;
+	 	this.theta=OrientationParameters.beta*this.dt*OrientationParameters.deviceMotionInterval*0.1;	 	
+	 	this.omega=OrientationParameters.gamma*this.dt*OrientationParameters.deviceMotionInterval*0.1;
+	 	//alert(OrientationParameters.alpha + " " + OrientationParameters.beta + " " + this.dt + " " + OrientationParameters.deviceMotionInterval + " " + this.phi + " " + this.theta);
+	 }
+
+	 this.target.x = Math.sin(this.phi) * Math.cos(this.theta);
+	 this.target.y = Math.cos(this.phi);
+	 this.target.z = 1;//Math.cos(this.omega);// * Math.sin(this.theta);
+
+	 this.camera.lookAt( this.target );
+
+	this.phi = OrientationParameters.alpha/360*Math.PI;
+	this.theta = OrientationParameters.beta/180*Math.PI;
+	this.omega = OrientationParameters.gamma/90*Math.PI;
+	this.camera.rotation.set(this.theta, this.phi, this.omega);
+};*/
 
 
 THREEx.Portal360.prototype.onOrientationEvent = function (event)

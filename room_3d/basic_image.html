@@ -1,18 +1,22 @@
+
+<script src="src/three.min.js"></script>
+<script src="src/Projector.js"></script>
+<script src="src/CanvasRenderer.js"></script>
 <!-- include a-frame -->
 <script src="src/aframe.js"></script>
 <!-- include ar.js for aframe -->
-<script>
-	var PortalDoor = null;
-</script>
 <script src='src/aframe-ar.js'></script>
-<script>ARjs.Context.baseURL = '../../games_resources/libs/AR.js-dev/three.js/'</script>
 <!-- include aframe-portal-door -->
-<script>
-	var globalFuncsArray = [];
-</script>
 <script src='src/aframe-portal-door.js'></script>
 <script src='src/threex-portal-door.js'></script>
-
+<script>
+	var OrientationParameters = {
+		alpha: 0,
+		beta: 0,
+		gamma: 0,
+		deviceMotionInterval: 0
+	};
+</script>
 <!-- start the body of your page -->
 <body style='margin : 0px; overflow: hidden;'>
  	<!-- add some info at the top of the page -->
@@ -41,24 +45,58 @@
 	</a-scene>
 
 <script>
- var cameraDom = document.querySelector("#StaticCamera");
- var APortalDoor = document.querySelector("#APortalDoor");
- var AAnchor = document.querySelector("#AAnchor");
- var GlobalScene = document.querySelector("#GlobalScene");
+          
+	cameraDom = document.querySelector("#StaticCamera");
+	APortalDoor = document.querySelector("#APortalDoor");
+	AAnchor = document.querySelector("#AAnchor");
+	GlobalScene = document.querySelector("#GlobalScene");
 
- var CameraInfoDiv = document.createElement("div");
- CameraInfoDiv.setAttribute("id", "CameraInfoDiv");
- document.body.appendChild(CameraInfoDiv);
- CameraInfoDiv.style.position = "absolute";
- CameraInfoDiv.style.left = "100px";
- CameraInfoDiv.style.top = "100px";
- CameraInfoDiv.style.zIndex = "100000000";
+	CameraInfoDiv = document.createElement("div");
+	CameraInfoDiv.setAttribute("id", "CameraInfoDiv");
+	document.body.appendChild(CameraInfoDiv);
+	CameraInfoDiv.style.position = "absolute";
+	CameraInfoDiv.style.left = "100px";
+	CameraInfoDiv.style.top = "100px";
+	CameraInfoDiv.style.zIndex = "100000000";
+</script>
 
-function updateCameraInfoDiv (){
-	CameraInfoDiv.innerText = cameraDom.sceneEl.camera.position.x + " " + cameraDom.sceneEl.camera.position.y + " " + cameraDom.sceneEl.camera.position.z;
-}
+<script>
+	///////////////////////////////////////////////
+	///////////////////////////////////////////////
+	if (window.DeviceMotionEvent != undefined) {
+		window.ondevicemotion = function(e) {
+			OrientationParameters.alpha = event.rotationRate.alpha;
+			OrientationParameters.beta = -event.rotationRate.beta;
+			OrientationParameters.deviceMotionInterval = event.interval;
 
- 
-	globalFuncsArray.push(updateCameraInfoDiv);
-</script>	
+			OrientationParameters.phi = 0;
+			OrientationParameters.theta = 0;
+		}
+	}
+/*
+	if (window.DeviceMotionEvent != undefined) {
+			window.addEventListener("devicemotion",function(event) {
+				OrientationParameters.alpha = event.rotationRate.alpha;
+				OrientationParameters.beta = -event.rotationRate.beta;
+				OrientationParameters.gamma = event.rotationRate.gamma;
+				
+				OrientationParameters.deviceMotionInterval = event.interval;
+			}, true);
+	}
+*/			
+	///////////////////////////////////////////////
+	///////////////////////////////////////////////
+/*
+	if(window.DeviceOrientationEvent) {
+		window.addEventListener("deviceorientation", function (event) {
+			OrientationParameters.alpha = event.alpha;
+			OrientationParameters.beta = event.beta;	
+			OrientationParameters.gamma = event.gamma;			
+		}, true);
+	} else
+	{
+		window.alert("NO DEVICEORIENTATIONEVENT");
+	}*/
+</script>
+
 </body>

@@ -157,11 +157,9 @@ var Qb=[Ik,Zh,_h,Qj,Qi,Pi,Ri,Ag,sg,qg,rg,yg,kh,jh,Oi,Mj];var Rb=[Jk,ki,ji,gi];va
 	*/
 	ARController.prototype.process = function(image) {
 
-		///////////////////////////////////////////////////////////
-		//////////////////////////////////////111111111111111111111
+		//////////////////////////////////////SKYFOX_CHANGED
 		 if(!this.DetectMarkersFlag)
 		 	return;
-		///////////////////////////////////////111111111111111111111
 		////////////////////////////////////////////////////////////
 
 		this.detectMarker(image);
@@ -182,8 +180,7 @@ var Qb=[Ik,Zh,_h,Qj,Qi,Pi,Ri,Ag,sg,qg,rg,yg,kh,jh,Oi,Mj];var Rb=[Jk,ki,ji,gi];va
 
 
 
-		///////////////////////////////////////////////////////////
-		//////////////////////////////////////111111111111111111111
+		//////////////////////////////////////SKYFOX_CHANGED
 		if(markerNum)
 		{
 			this.PositivesCounter++;
@@ -194,7 +191,6 @@ var Qb=[Ik,Zh,_h,Qj,Qi,Pi,Ri,Ag,sg,qg,rg,yg,kh,jh,Oi,Mj];var Rb=[Jk,ki,ji,gi];va
 				this.PositivesCounter = 0;
 		}
 		///////////////////////////////////////111111111111111111111
-		////////////////////////////////////////////////////////////
 
 		for (var i=0; i<markerNum; i++) {
 
@@ -205,21 +201,16 @@ var Qb=[Ik,Zh,_h,Qj,Qi,Pi,Ri,Ag,sg,qg,rg,yg,kh,jh,Oi,Mj];var Rb=[Jk,ki,ji,gi];va
 				we want to change function to next update.
 			*/ 
 
-		///////////////////////////////////////////////////////////
-		//////////////////////////////////////111111111111111111111
-		
+		//////////////////////////////////////SKYFOX_CHANGED		
 			if(this.updateChangeFlag && PortalDoor && (this.PositivesCounter >= 20))
 			{
 				this.updateChangeFlag = false;
 				setTimeout(function (){
 					PortalDoor.changeUpdateFunctionTo2();
-					AAnchor.object3D = new THREE.Object3D();
 					this.DetectMarkersFlag = false;					
-				}.bind(this), 5000);
-			};
-		
-		///////////////////////////////////////111111111111111111111
-		////////////////////////////////////////////////////////////
+				}.bind(this), 1000);
+			};		
+		////////////////////////////////////////////////////
 
 			var markerInfo = this.getMarker(i);
 
@@ -8584,7 +8575,10 @@ AFRAME.registerSystem('arjs', {
 		},
 		debugUIEnabled :{
 			type: 'boolean',	
-			default: true,			
+			default: false,			
+///////////////////////////////SKYFOX_CHANGED
+//			default: true,			
+///////////////////////////////!!!!!!!!!!!!!!!!!
 		},
 		areaLearningButton : {
 			type: 'boolean',	
