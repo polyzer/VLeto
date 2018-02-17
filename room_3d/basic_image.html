@@ -28,18 +28,17 @@
 	<a-scene id="GlobalScene" embedded arjs='trackingMethod: best;'>
 
 		<!-- Create a anchor to attach your augmented reality -->
-		<a-anchor id="AAnchor" hit-testing-enabled='true'>
+		<a-marker id="AAnchor" preset='custom'  type='pattern' url='./patterns/beta_gray.patt'>
 			<!-- portal 360 with an image -->
-			<a-portal-door id="APortalDoor" url='images/360_topaz.png' position='0 -0.5 1 ' scale='1 1 1' rotation='270 0 0'><a-portal-door>
+			<a-portal-door id="APortalDoor"  url='images/360_topaz.png' position='0 -0.5 1 ' scale='1 1 1' rotation='270 0 0'><a-portal-door>
+		</a-marker>
 
-			<!-- portal 360 with an video -->
-<!-- 			<a-portal-door url='videos/pano.webm' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door> -->
-<!-- 			<a-portal-door url='videos/aframe-city-360.mp4' position='0 0 0' scale='2 2 2' rotation='0 90 0'><a-portal-door>
+<!-- 		<a-marker id="AAnchor" hit-testing-enabled='true' type='pattern' patternUrl='./patterns/skyfox_marker.patt'>
+			<a-portal-door id="APortalDoor" url='images/1.png' position='0 -0.5 1 ' scale='1 1 1' rotation='270 0 0'><a-portal-door>
+
+		</a-marker>
+
  -->
-
-
-		</a-anchor>
-
 		<!-- Define a static camera -->
 		<a-camera-static id="StaticCamera" />
 	</a-scene>
@@ -53,7 +52,9 @@
 
 	CameraInfoDiv = document.createElement("div");
 	CameraInfoDiv.setAttribute("id", "CameraInfoDiv");
+/*
 	document.body.appendChild(CameraInfoDiv);
+*/
 	CameraInfoDiv.style.position = "absolute";
 	CameraInfoDiv.style.left = "100px";
 	CameraInfoDiv.style.top = "100px";

@@ -44,7 +44,7 @@ AFRAME.registerComponent('arjs-portal-door', {
 
 		CameraInfoDiv.innerText = OrientationParameters.phi + " " + OrientationParameters.theta;
 	}
-})
+});
 
 
 AFRAME.registerPrimitive('a-portal-door', AFRAME.utils.extendDeep({}, AFRAME.primitives.getMeshMixin(), {
@@ -56,4 +56,4 @@ AFRAME.registerPrimitive('a-portal-door', AFRAME.utils.extendDeep({}, AFRAME.pri
 		//'radius': 'arjs-portal-door.radius'
 		
 	}
-}))
+}));
