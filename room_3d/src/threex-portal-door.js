@@ -289,6 +289,7 @@ THREEx.Portal360.prototype.changeUpdateFunctionTo2 = function ()
 	AAnchor.object3D = new THREE.Scene();
 	this.n = 100;
 	this.camera = cameraDom.object3D;
+	//var DOC = new THREE.DeviceOrientationControls(this.camera);
 	this.px = this.PortalScene.position.x / this.n;
 	this.py = this.PortalScene.position.y / this.n;
 	this.update = this.update2;

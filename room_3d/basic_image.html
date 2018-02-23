@@ -1,11 +1,10 @@
 
 <script src="src/three.min.js"></script>
-<script src="src/Projector.js"></script>
-<script src="src/CanvasRenderer.js"></script>
 <!-- include a-frame -->
 <script src="src/aframe.js"></script>
 <!-- include ar.js for aframe -->
 <script src='src/aframe-ar.js'></script>
+<script src="src/DeviceOrientationControls.js"></script>
 <!-- include aframe-portal-door -->
 <script src='src/aframe-portal-door.js'></script>
 <script src='src/threex-portal-door.js'></script>
@@ -16,6 +15,7 @@
 		gamma: 0,
 		deviceMotionInterval: 0
 	};
+
 </script>
 <!-- start the body of your page -->
 <body style='margin : 0px; overflow: hidden;'>
@@ -28,11 +28,10 @@
 	<a-scene id="GlobalScene" embedded arjs='trackingMethod: best;'>
 
 		<!-- Create a anchor to attach your augmented reality -->
-		<a-marker id="AAnchor" preset='custom'  type='pattern' url='./patterns/beta_gray.patt'>
+		<a-marker id="AAnchor" preset='custom'  type='pattern' url='./patterns/skyfox_b_o.patt'>
 			<!-- portal 360 with an image -->
 			<a-portal-door id="APortalDoor"  url='images/360_topaz.png' position='0 -0.5 1 ' scale='1 1 1' rotation='270 0 0'><a-portal-door>
 		</a-marker>
-
 <!-- 		<a-marker id="AAnchor" hit-testing-enabled='true' type='pattern' patternUrl='./patterns/skyfox_marker.patt'>
 			<a-portal-door id="APortalDoor" url='images/1.png' position='0 -0.5 1 ' scale='1 1 1' rotation='270 0 0'><a-portal-door>
 
@@ -45,12 +44,12 @@
 
 <script>
           
-	cameraDom = document.querySelector("#StaticCamera");
-	APortalDoor = document.querySelector("#APortalDoor");
-	AAnchor = document.querySelector("#AAnchor");
-	GlobalScene = document.querySelector("#GlobalScene");
+	var cameraDom = document.querySelector("#StaticCamera");
+	var APortalDoor = document.querySelector("#APortalDoor");
+	var AAnchor = document.querySelector("#AAnchor");
+	var GlobalScene = document.querySelector("#GlobalScene");
 
-	CameraInfoDiv = document.createElement("div");
+	var CameraInfoDiv = document.createElement("div");
 	CameraInfoDiv.setAttribute("id", "CameraInfoDiv");
 /*
 	document.body.appendChild(CameraInfoDiv);
@@ -74,30 +73,6 @@
 			OrientationParameters.theta = 0;
 		}
 	}
-/*
-	if (window.DeviceMotionEvent != undefined) {
-			window.addEventListener("devicemotion",function(event) {
-				OrientationParameters.alpha = event.rotationRate.alpha;
-				OrientationParameters.beta = -event.rotationRate.beta;
-				OrientationParameters.gamma = event.rotationRate.gamma;
-				
-				OrientationParameters.deviceMotionInterval = event.interval;
-			}, true);
-	}
-*/			
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-/*
-	if(window.DeviceOrientationEvent) {
-		window.addEventListener("deviceorientation", function (event) {
-			OrientationParameters.alpha = event.alpha;
-			OrientationParameters.beta = event.beta;	
-			OrientationParameters.gamma = event.gamma;			
-		}, true);
-	} else
-	{
-		window.alert("NO DEVICEORIENTATIONEVENT");
-	}*/
 </script>
 
 </body>
