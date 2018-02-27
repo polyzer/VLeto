@@ -1,0 +1,146 @@
+
+<script src="src/three.min.js"></script>
+<!-- include a-frame -->
+<script src="src/aframe.js"></script>
+<!-- include ar.js for aframe -->
+<script src='src/aframe-ar.js'></script>
+<script src="src/DeviceOrientationControls.js"></script>
+<script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
+<!-- include aframe-portal-door -->
+<script src='src/aframe-portal-door.js'></script>
+<script src='src/threex-portal-door.js'></script>
+<script>
+	var OrientationParameters = {
+		alpha: 0,
+		beta: 0,
+		gamma: 0,
+		deviceMotionInterval: 0
+	};
+	var CONTROL_PARAMETERS = {
+		TYPE: {
+			ACCELEROMETER: 0,
+			TOUCH: 1
+		}
+	};
+
+
+	var ControlParameters = {
+		Type: CONTROL_PARAMETERS.TYPE.ACCELEROMETER,
+		Clicked: false
+	};
+</script>
+<!-- start the body of your page -->
+<body style='margin : 0px; overflow: hidden;'>
+ 	<!-- add some info at the top of the page -->
+<!--	<div style='position: fixed; top: 10px; width:100%; text-align: center; z-index: 1;'>
+		<a href="https://github.com/jeromeetienne/AR.js/" target="_blank">AR.js</a> - Two-ways Portal 360 for a-frame by <a href='https://twitter.com/jerome_etienne' target='_blank'>@jerome_etienne</a>
+	</div>
+ -->
+
+	<a-scene id="GlobalScene" embedded arjs='trackingMethod: best;'>
+
+		<a-marker id="AAnchor" preset='custom'  type='pattern' url='./patterns/skyfox_b_o_slim.patt'>
+			<a-portal-door id="APortalDoor"  url='images/2.jpg' position='0 -0.5 1 ' scale='1 1 1' rotation='270 0 0'><a-portal-door>
+		</a-marker>
+
+		<a-camera-static id="StaticCamera" />
+	</a-scene>
+
+<script>
+          
+	var cameraDom = document.querySelector("#StaticCamera");
+	var APortalDoor = document.querySelector("#APortalDoor");
+	var AAnchor = document.querySelector("#AAnchor");
+	var GlobalScene = document.querySelector("#GlobalScene");
+
+	var CameraInfoDiv = document.createElement("div");
+	CameraInfoDiv.setAttribute("id", "CameraInfoDiv");
+
+	//document.body.appendChild(CameraInfoDiv);
+
+	CameraInfoDiv.style.position = "absolute";
+	CameraInfoDiv.style.left = "100px";
+	CameraInfoDiv.style.top = "100px";
+	CameraInfoDiv.style.zIndex = "100000000";
+
+	var ChangeControlButton = document.createElement("button");
+	ChangeControlButton.setAttribute("id", "ChangeControlButton");
+	ChangeControlButton.style.position = "absolute";
+	ChangeControlButton.style.left = "20px";
+	ChangeControlButton.style.top = "20px";
+	ChangeControlButton.innerText = "ok";
+	ChangeControlButton.style.zIndex = "1009000889";
+	document.body.appendChild(ChangeControlButton);
+
+	ChangeControlButton.addEventListener("click", function () {
+		if(ControlParameters.Type === CONTROL_PARAMETERS.TYPE.ACCELEROMETER)
+		{
+			ControlParameters.Type = CONTROL_PARAMETERS.TYPE.TOUCH;
+		} else
+		{
+			ControlParameters.Type = CONTROL_PARAMETERS.TYPE.ACCELEROMETER;				
+		}
+
+		ControlParameters.Clicked = true;
+
+	});
+</script>
+
+<!-- 
+<script>
+
+	var tgScene = document.createElement("a-scene");
+	tgScene.setAttribute("id", "GlobalScene");	
+	tgScene.setAttribute("embedded", 1);
+	tgScene.setAttribute("arjs", "trackingMethod: best;");
+	document.body.appendChild(tgScene);
+
+	var tgMarker = document.createElement("a-marker");
+	tgMarker.setAttribute("id", "AAnchor");
+	tgMarker.setAttribute("preset", "custom");
+	tgMarker.setAttribute("type", "pattern");
+	tgMarker.setAttribute("url", "./patterns/skyfox_b_o_slim.patt");
+	tgScene.appendChild(tgMarker);
+
+	var tgCamera = document.createElement("a-camera-static");
+	tgCamera.setAttribute("id", "StaticCamera");	
+	tgScene.appendChild(tgCamera);
+	
+	var tgDoor = document.createElement("a-portal-door");
+	tgDoor.setAttribute("id", "APortalDoor");
+	tgDoor.setAttribute("position", "0 -0.5 1");
+	tgDoor.setAttribute("scale", "1 1 1");
+	tgDoor.setAttribute("rotation", "270 0 0");
+	tgDoor.setAttribute("url", "images/360_topaz.png");
+	tgMarker.appendChild(tgDoor);
+          
+	var cameraDom = document.querySelector("#StaticCamera");
+	var APortalDoor = document.querySelector("#APortalDoor");
+	var AAnchor = document.querySelector("#AAnchor");
+	var GlobalScene = document.querySelector("#GlobalScene");
+
+	var CameraInfoDiv = document.createElement("div");
+	CameraInfoDiv.setAttribute("id", "CameraInfoDiv");
+	document.body.appendChild(CameraInfoDiv);
+	CameraInfoDiv.style.position = "absolute";
+	CameraInfoDiv.style.left = "100px";
+	CameraInfoDiv.style.top = "100px";
+	CameraInfoDiv.style.zIndex = "100000000";
+</script>
+ -->
+<script>
+	///////////////////////////////////////////////
+	///////////////////////////////////////////////
+	if (window.DeviceMotionEvent != undefined) {
+		window.ondevicemotion = function(e) {
+			OrientationParameters.alpha = event.rotationRate.alpha;
+			OrientationParameters.beta = -event.rotationRate.beta;
+			OrientationParameters.deviceMotionInterval = event.interval;
+
+			OrientationParameters.phi = 0;
+			OrientationParameters.theta = 0;
+		}
+	}
+</script>
+
+</body>

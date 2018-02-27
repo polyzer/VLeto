@@ -4929,6 +4929,10 @@ THREEx.ArMarkerControls.prototype._initArtoolkit = function(){
 		var arController = _this.context.arController
 		console.assert(arController !== null )
 
+		////////////////////////////////////////////SKYFOX_CHANGED
+        arController.setPattRatio(0.7);
+        ////////////////////////////////////////////
+
 		// start tracking this pattern
 		if( _this.parameters.type === 'pattern' ){
 	                arController.loadMarker(_this.parameters.patternUrl, function(markerId) {

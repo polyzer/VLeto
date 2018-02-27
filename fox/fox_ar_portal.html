@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+
+<script src="src/portals_parameters.js">
+</script>
+<script src='src/three.min.js'></script>
+<script src="src/ar1.js"></script>
+<script src="src/ColladaLoader2.js"></script>
+<script src="src/threex-portal-door-old-fox.js"></script>
+
+<script>
+	THREEx.ArToolkitContext.baseURL = './'
+</script>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+<script>
+	// init renderer
+	var renderer	= new THREE.WebGLRenderer({
+		antialias: true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+	// array of functions for the rendering loop
+	var onRenderFcts= [];
+	// init scene and camera
+	var scene = new THREE.Scene();
+	// init scene and camera
+	var scene1 = new THREE.Scene();
+	var SphereMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0xffffff, side: THREE.DoubleSide}));
+	scene1.add(SphereMesh);
+
+	var fox_scene = new THREE.Scene();
+
+	var doorWidth = 1
+	var doorHeight = 2
+	var fox;
+	var imageURL = 'images/360_topaz.png'
+	var radius = 30
+	var loader = new THREE.ColladaLoader();
+	loader.options.convertUpAxis = true;
+	
+	loader.load( './fox/Fox_scene.blend.dae', function ( collada ) {
+		var avatar = collada.scene;
+		fox_scene.add( avatar );
+	} );
+
+	// Create a camera
+	var camera = new THREE.Camera();
+	scene.add(camera);
+	// Create a camera
+	var camera1 = new THREE.Camera();
+	scene1.add(camera1);
+
+	var gscene = scene, gcamera = camera;
+
+
+	var AmbientLight = new THREE.AmbientLight(0xFFFFFFF, 1);
+
+	scene.add(AmbientLight);
+
+	var PortalDoor = new THREEx.Portal360(imageURL, doorWidth, doorHeight);
+	scene.add(PortalDoor.object3d);
+
+	PortalDoor.object3d.rotation.x = -Math.PI/2;//1.5*Math.PI;
+	PortalDoor.object3d.position = new THREE.Vector3(0, -0.5, 1)
+	
+	var arToolkitSource = new THREEx.ArToolkitSource({
+		// to read from the webcam 
+		sourceType : 'webcam',
+		
+	})
+	arToolkitSource.init(function onReady(){
+		onResize()
+	})
+	
+	// handle resize
+	window.addEventListener('resize', function(){
+		onResize()
+	})
+	function onResize(){
+		arToolkitSource.onResize()	
+		arToolkitSource.copySizeTo(renderer.domElement)	
+		if( arToolkitContext.arController !== null ){
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
+		}	
+		if( arToolkitContext1.arController !== null ){
+			arToolkitSource.copySizeTo(arToolkitContext1.arController.canvas)	
+		}	
+	}
+	// create atToolkitContext
+	var arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + 'patterns/camera_para.dat',
+		detectionMode: 'mono',
+	});
+		// create atToolkitContext
+	var arToolkitContext1 = new THREEx.ArToolkitContext({
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + 'patterns/camera_para.dat',
+		detectionMode: 'mono',
+	});
+	// initialize it
+	arToolkitContext.init(function(){
+		// copy projection matrix to camera
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	});
+	// initialize it
+	arToolkitContext1.init(function(){
+		camera1.projectionMatrix.copy( arToolkitContext1.getProjectionMatrix() );
+	});	// update artoolkit on every frame
+	onRenderFcts.push(function(){
+		if( arToolkitSource.ready === false )	return
+		arToolkitContext.update( arToolkitSource.domElement )
+		arToolkitContext1.update( arToolkitSource.domElement )
+		
+		// update scene.visible if the marker is seen
+		if(camera.visible)
+		{
+			scene.visible = camera.visible;			
+			gscene = scene;
+			gcamera = camera;
+
+		}else if(camera1.visible)
+		{
+			scene1.visible = camera1.visible;			
+			gscene = scene1;
+			gcamera = camera1;
+
+		}else
+		{	scene.visible = false;
+			camera.visible = false;
+			camera1.visible = false;
+			scene1.visible = false;
+		}
+		console.log(scene.visible + " " + scene1.visible);
+	})	
+	// init controls for camera
+	var markerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
+		type : 'pattern',
+		patternUrl : THREEx.ArToolkitContext.baseURL + 'patterns/skyfox_b_o_slim.patt',
+		changeMatrixMode: 'cameraTransformMatrix'
+	})
+	// init controls for camera
+	var markerControls = new THREEx.ArMarkerControls(arToolkitContext1, camera1, {
+		type : 'pattern',
+		patternUrl : THREEx.ArToolkitContext.baseURL + 'patterns/arjs_slim.patt',
+		changeMatrixMode: 'cameraTransformMatrix'
+	})
+
+	scene.visible = false
+	// render the scene
+	onRenderFcts.push(function(){
+		renderer.render( gscene, gcamera );
+//		renderer.render( scene1, camera );
+	})
+	// run the rendering loop
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){
+		// keep looping
+		requestAnimationFrame( animate );
+		PortalDoor.update();
+		// measure time
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
+		// call each update function
+		onRenderFcts.forEach(function(onRenderFct){
+			onRenderFct(deltaMsec/1000, nowMsec/1000)
+		})
+	})
+</script></body>
