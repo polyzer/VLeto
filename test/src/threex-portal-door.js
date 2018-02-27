@@ -13,6 +13,43 @@ THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight, radius){
 	this.phi = Math.PI/2;
 	this.theta = Math.PI/2;
 
+
+	// массив текстур, с которыми будут созданы сферы
+	this.texturesURLArray = [
+		"./images/бабка.jpg",
+		"./images/Gramais02.jpg",
+		"./images/3.jpg",
+		"./images/4.jpg"
+	];
+	// массив сфер
+	this.SpheresArray = [];
+	//указатель на текущий элемент массива сфер
+	this.CurrentSphereObject = null;
+	for(var i=0; i<this.texturesURLArray.length; i++)
+	{
+		var texture360 = new THREE.TextureLoader().load(this.texturesURLArray[i])
+		texture360.minFilter = THREE.NearestFilter;
+		texture360.format = THREE.RGBFormat;
+		texture360.flipY = false;		
+
+		this.SpheresArray.push({	
+			InsideMesh: this._buildInsideMesh(texture360, doorWidth, doorHeight, radius),
+			OutsideMesh: this._buildOutsideMesh(texture360, doorWidth, doorHeight, radius),
+			Next: null
+		});
+
+		if(i === this.texturesURLArray.length-1)
+		{
+			this.SpheresArray[i].Next = this.SpheresArray[0];
+			this.SpheresArray[i-1].Next = this.SpheresArray[i];
+		} else if (i === 0) {
+
+		} else {
+			this.SpheresArray[i-1].Next = this.SpheresArray[i];
+		}
+	};
+	this.CurrentSphereObject = this.SpheresArray[0];
+
 	this.target = new THREE.Vector3();	
 	radius *= 5; /*
 	doorWidth *= 5;
@@ -56,6 +93,7 @@ THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight, radius){
 	//		build mesh
 	//////////////////////////////////////////////////////////////////////////////
 
+
 	// create insideMesh which is visible IIF inside the portal
 	var insideMesh = this._buildInsideMesh(texture360, doorWidth, doorHeight, radius)
 	insideMesh.name = "inside"
@@ -68,6 +106,8 @@ THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight, radius){
 	doorCenter.add(outsideMesh)
 	this.outsideMesh = outsideMesh
 
+
+
 	// create frameMesh for the frame of the portal
 	var frameMesh = this._buildRectangularFrame(doorWidth/100, doorWidth, doorHeight)
 	frameMesh.name = "frame"
@@ -77,6 +117,19 @@ THREEx.Portal360 = function(videoImageURL, doorWidth, doorHeight, radius){
 //	doorCenter.add(glowMesh);
 
 	this.doorCenter = doorCenter;
+}
+
+THREEx.Portal360.prototype.setSphereMeshToNext = function () {
+	this.doorCenter.remove(this.outsideMesh);
+	this.doorCenter.remove(this.insideMesh);
+
+	this.CurrentSphereObject = this.CurrentSphereObject.Next;
+	this.insideMesh = this.CurrentSphereObject.InsideMesh;
+	this.outsideMesh = this.CurrentSphereObject.OutsideMesh;
+
+	this.doorCenter.add(this.insideMesh);
+	this.doorCenter.add(this.outsideMesh);
+
 }
 			
 //////////////////////////////////////////////////////////////////////////////

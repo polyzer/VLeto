@@ -1,4 +1,10 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<script> 
+	var PortalDoor = null;
+</script>
 <script src="src/three.min.js"></script>
 <!-- include a-frame -->
 <script src="src/aframe.js"></script>
@@ -29,6 +35,8 @@
 		Clicked: false
 	};
 </script>
+</head>
+
 <!-- start the body of your page -->
 <body style='margin : 0px; overflow: hidden;'>
  	<!-- add some info at the top of the page -->
@@ -68,7 +76,7 @@
 	ChangeControlButton.style.position = "absolute";
 	ChangeControlButton.style.left = "20px";
 	ChangeControlButton.style.top = "20px";
-	ChangeControlButton.innerText = "ok";
+	ChangeControlButton.innerText = "ChangeControl";
 	ChangeControlButton.style.zIndex = "1009000889";
 	document.body.appendChild(ChangeControlButton);
 
@@ -84,6 +92,20 @@
 		ControlParameters.Clicked = true;
 
 	});
+
+	var NextSphereButton = document.createElement("button");
+	NextSphereButton.setAttribute("id", "NextSphereButton");
+	NextSphereButton.style.position = "absolute";
+	NextSphereButton.style.left = "20px";
+	NextSphereButton.style.top = "100px";
+	NextSphereButton.innerText = "NextPanorama";
+	NextSphereButton.style.zIndex = "1009000889";
+	document.body.appendChild(NextSphereButton);
+
+	NextSphereButton.addEventListener("click", function () {
+		PortalDoor.setSphereMeshToNext();
+	});
+
 </script>
 
 <!-- 
@@ -129,17 +151,54 @@
 </script>
  -->
 <script>
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	if (window.DeviceMotionEvent != undefined) {
-		window.ondevicemotion = function(e) {
-			OrientationParameters.alpha = event.rotationRate.alpha;
-			OrientationParameters.beta = -event.rotationRate.beta;
-			OrientationParameters.deviceMotionInterval = event.interval;
+// Функция тестирует акселерометр на показания данных
+ function testDeviceMotion(event) {
+	// Если браузер поддерживает событие, но данные
+	// передаются как undefined||null, значит, что устройство
+	// не поддерживает акселерометр,
+	// иначе данные были бы числом.
+	if(!event.rotationRate.alpha)
+	{
+		// Если у нас данные - не число, то удаляем все собственные обработчики;
+		// чтобы они за зря не крутились
+		window.removeEventListener("devicemotion", testDeviceMotion);			
+		ControlParameters.Type = CONTROL_PARAMETERS.TYPE.TOUCH;
+		document.body.removeChild(ChangeControlButton);
+	} else {
+		// если данные являются числом, то устройство имеет акселерометр,
+		// устанавливаем нормальный обработчик и удаляем тестовый;
+		window.addEventListener("devicemotion", onDeviceMotion);			
+		window.removeEventListener("devicemotion", testDeviceMotion);			
+	}
+};
 
-			OrientationParameters.phi = 0;
-			OrientationParameters.theta = 0;
-		}
+
+// Наш обработчик ускорения
+ function onDeviceMotion(event) {
+
+	OrientationParameters.alpha = event.rotationRate.alpha;
+	OrientationParameters.beta = -event.rotationRate.beta;
+	OrientationParameters.deviceMotionInterval = event.interval;
+
+	if(Math.abs(event.rotationRate.alpha) > 5 || 
+		Math.abs(event.rotationRate.beta) > 5 ||
+		Math.abs(event.rotationRate.gamma) > 5
+	)
+	{
+		PortalDoor.setSphereMeshToNext();
+	}
+
+	OrientationParameters.phi = 0;
+	OrientationParameters.theta = 0;
+};
+
+	///////////////////////////////////////////////
+	// Определяем, поддерживает ли устройство акселерометр!
+	if (window.DeviceMotionEvent != undefined) {
+		window.addEventListener("devicemotion", testDeviceMotion);
+	} else {
+		ControlParameters.Type = CONTROL_PARAMETERS.TYPE.TOUCH;
+		document.body.removeChild(ChangeControlButton);
 	}
 </script>
 
